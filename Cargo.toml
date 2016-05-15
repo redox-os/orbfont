@@ -9,4 +9,4 @@ authors = ["Jeremy Soller <jackpot51@gmail.com>"]
 
 [dependencies]
 orbclient = "0.1"
-rusttype = { git = "https://github.com/jackpot51/rusttype.git" }
+rusttype = "0.2"
