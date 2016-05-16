@@ -15,6 +15,7 @@ pub struct Font {
 }
 
 impl Font {
+    /// Load a font from file path
     pub fn from_path<P: AsRef<Path>>(path: P) -> Result<Font, String> {
         let mut font_file = try!(File::open(path).map_err(|err| format!("failed to open font: {}", err)));
         let mut font_data = Vec::new();
@@ -27,7 +28,8 @@ impl Font {
             inner: font
         })
     }
-
+    
+    /// Render provided text using the font
     pub fn render<'a>(&'a self, text: &str, height: f32) -> Text<'a> {
         let scale = rusttype::Scale { x: height, y: height };
 
@@ -62,14 +64,17 @@ pub struct Text<'a> {
 }
 
 impl<'a> Text<'a> {
+    /// Return width of the text
     pub fn width(&self) -> u32 {
         self.w
     }
 
+    /// Return height of the text
     pub fn height(&self) -> u32 {
         self.h
     }
 
+    /// Draw the text onto a window
     pub fn draw(&self, window: &mut Window, x: i32, y: i32, color: Color) {
         for g in self.glyphs.iter() {
             if let Some(bb) = g.pixel_bounding_box() {
