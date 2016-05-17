@@ -29,7 +29,7 @@ impl Font {
     }
 
     pub fn render<'a>(&'a self, text: &str, height: f32) -> Text<'a> {
-        let scale = rusttype::Scale { x: height, y: height };
+        let scale = rusttype::Scale::uniform(height);
 
         // The origin of a line of text is at the baseline (roughly where non-descending letters sit).
         // We don't want to clip the text, so we shift it down with an offset when laying it out.
