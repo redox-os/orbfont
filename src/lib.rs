@@ -15,6 +15,11 @@ pub struct Font {
 }
 
 impl Font {
+    /// Find a font from an optional type, family, and style, such as "Mono", "Fira", "Regular"
+    pub fn find(typeface: Option<&str>, family: Option<&str>, style: Option<&str>) -> Result<Font, String> {
+        Font::from_path(&format!("/ui/fonts/{}/{}/{}.ttf", typeface.unwrap_or("Mono"), family.unwrap_or("Fira"), style.unwrap_or("Regular")))
+    }
+
     /// Load a font from file path
     pub fn from_path<P: AsRef<Path>>(path: P) -> Result<Font, String> {
         let mut font_file = try!(File::open(path).map_err(|err| format!("failed to open font: {}", err)));
