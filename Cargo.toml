@@ -2,7 +2,7 @@
 name = "orbfont"
 description = "Orbital font rendering"
 repository = "https://github.com/redox-os/orbfont"
-version = "0.1.0"
+version = "0.1.1"
 license-file = "LICENSE"
 readme = "README.md"
 authors = ["Jeremy Soller <jackpot51@gmail.com>"]
