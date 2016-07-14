@@ -16,8 +16,14 @@ pub struct Font {
 
 impl Font {
     /// Find a font from an optional type, family, and style, such as "Mono", "Fira", "Regular"
+    #[cfg(target_os = "redox")]
     pub fn find(typeface: Option<&str>, family: Option<&str>, style: Option<&str>) -> Result<Font, String> {
         Font::from_path(&format!("/ui/fonts/{}/{}/{}.ttf", typeface.unwrap_or("Mono"), family.unwrap_or("Fira"), style.unwrap_or("Regular")))
+    }
+
+    #[cfg(not(target_os = "redox"))]
+    pub fn find(typeface: Option<&str>, family: Option<&str>, style: Option<&str>) -> Result<Font, String> {
+        Font::from_path(&format!("/usr/share/fonts/truetype/freefont/{}{}{}.ttf", family.unwrap_or("Free"), typeface.unwrap_or("Mono"), style.unwrap_or("")))
     }
 
     /// Load a font from file path
@@ -33,7 +39,7 @@ impl Font {
             inner: font
         })
     }
-    
+
     /// Render provided text using the font
     pub fn render<'a>(&'a self, text: &str, height: f32) -> Text<'a> {
         let scale = rusttype::Scale::uniform(height);
