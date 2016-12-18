@@ -8,7 +8,7 @@ use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 
-use orbclient::{Color, Renderer, Window};
+use orbclient::{Color, Renderer};
 
 pub struct Font {
     inner: rusttype::Font<'static>
@@ -86,7 +86,7 @@ impl<'a> Text<'a> {
     }
 
     /// Draw the text onto a window
-    pub fn draw(&self, window: &mut Window, x: i32, y: i32, color: Color) {
+    pub fn draw(&self, renderer: &mut Renderer, x: i32, y: i32, color: Color) {
         for g in self.glyphs.iter() {
             if let Some(bb) = g.pixel_bounding_box() {
                 g.draw(|off_x, off_y, v| {
@@ -95,7 +95,7 @@ impl<'a> Text<'a> {
                     // There's still a possibility that the glyph clips the boundaries of the bitmap
                     if off_x >= 0 && off_x < self.w as i32 && off_y >= 0 && off_y < self.h as i32 {
                         let c = (v * 255.0) as u32;
-                        window.pixel(x + off_x, y + off_y, Color{
+                        renderer.pixel(x + off_x, y + off_y, Color{
                             data: c << 24 | (color.data & 0xFFFFFF)
                         });
                     }
