@@ -86,7 +86,7 @@ impl<'a> Text<'a> {
     }
 
     /// Draw the text onto a window
-    pub fn draw(&self, renderer: &mut Renderer, x: i32, y: i32, color: Color) {
+    pub fn draw<R: Renderer>(&self, renderer: &mut R, x: i32, y: i32, color: Color) {
         for g in self.glyphs.iter() {
             if let Some(bb) = g.pixel_bounding_box() {
                 g.draw(|off_x, off_y, v| {
