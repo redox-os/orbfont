@@ -23,7 +23,7 @@ impl Font {
 
     #[cfg(not(target_os = "redox"))]
     pub fn find(typeface: Option<&str>, family: Option<&str>, style: Option<&str>) -> Result<Font, String> {
-        Font::from_path(&format!("/usr/share/fonts/truetype/freefont/{}{}{}.ttf", family.unwrap_or("Free"), typeface.unwrap_or("Mono"), style.unwrap_or("")))
+        Font::from_path(&format!("/usr/share/fonts/truetype/liberation/{}{}-{}.ttf", family.unwrap_or("Liberation"), typeface.unwrap_or("Mono"), style.unwrap_or("Regular")))
     }
 
     /// Load a font from file path
