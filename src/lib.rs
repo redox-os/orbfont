@@ -28,11 +28,15 @@ impl Font {
 
     /// Load a font from file path
     pub fn from_path<P: AsRef<Path>>(path: P) -> Result<Font, String> {
-        let mut font_file = try!(File::open(path).map_err(|err| format!("failed to open font: {}", err)));
-        let mut font_data = Vec::new();
-        let _ = try!(font_file.read_to_end(&mut font_data).map_err(|err| format!("failed to read font: {}", err)));
+        let mut file = try!(File::open(path).map_err(|err| format!("failed to open font: {}", err)));
+        let mut data = Vec::new();
+        let _ = try!(file.read_to_end(&mut data).map_err(|err| format!("failed to read font: {}", err)));
+        Font::from_data(data)
+    }
 
-        let collection = rusttype::FontCollection::from_bytes(font_data);
+    /// Load a font from a slice
+    pub fn from_data<D: Into<rusttype::SharedBytes<'static>>>(data: D) -> Result<Font, String> {
+        let collection = rusttype::FontCollection::from_bytes(data);
         let font = try!(collection.into_font().ok_or("font collection did not have exactly one font".to_string()));
 
         Ok(Font {
