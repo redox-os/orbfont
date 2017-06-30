@@ -57,7 +57,17 @@ impl Font {
             }
         }
         if let Some(family) = family {
-            font = font.family(family);
+            if let Some(typeface) = typeface {
+                let typeface_caps = &typeface.to_uppercase();
+                // manually adding Serif and Sans
+                if typeface_caps.contains("SERIF") {
+                    font = font.family(&[family, "Serif"].concat());
+                } else if typeface_caps.contains("SANS") {
+                    font = font.family(&[family, "Sans"].concat())
+                }
+            } else {
+                font = font.family(family);
+            }
         }
         let mut font = font.build();
         // font_loader::query specific returns an empty vector if there are no matches
