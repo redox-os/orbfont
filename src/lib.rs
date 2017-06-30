@@ -6,12 +6,12 @@ extern crate rusttype;
 
 #[cfg(not(target_os = "redox"))]
 extern crate font_loader;
+use font_loader::system_fonts::FontPropertyBuilder;
+use font_loader::system_fonts;
 
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
-use font_loader::system_fonts::FontPropertyBuilder;
-use font_loader::system_fonts;
 
 use orbclient::{Color, Renderer};
 
