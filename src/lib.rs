@@ -66,7 +66,6 @@ impl Font {
         let fonts = system_fonts::query_specific(&mut font); // Returns an empty vector if there are no matches.
         // Confirm that a font matched:
         if fonts.len() >= 1 {
-            // TODO use from_data and get to get the font
             // get the matched font straight from the data:
             let font_data = system_fonts::get(&font); // Getting font data from properties
             match font_data {
