@@ -10,3 +10,6 @@ authors = ["Jeremy Soller <jackpot51@gmail.com>"]
 [dependencies]
 orbclient = "0.3"
 rusttype = "0.2"
+
+[target.'cfg(not(target_os="redox"))'.dependencies]
+font-loader = "0.3.2"
