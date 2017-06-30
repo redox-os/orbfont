@@ -6,7 +6,9 @@ extern crate rusttype;
 
 #[cfg(not(target_os = "redox"))]
 extern crate font_loader;
+#[cfg(not(target_os = "redox"))]
 use font_loader::system_fonts::FontPropertyBuilder;
+#[cfg(not(target_os = "redox"))]
 use font_loader::system_fonts;
 
 use std::fs::File;
