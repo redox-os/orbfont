@@ -92,7 +92,7 @@ impl Font {
             }
         } else { 
             // If no font matched, try again with no family, as concatenating "Sans" or "Serif" may rule out legitimate fonts
-            let mut font = Font::build_fontproperty(typeface, family, None);
+            let mut font = Font::build_fontproperty(None, family, style);
             let fonts = system_fonts::query_specific(&mut font);
             if fonts.len() >= 1 {
                 let font_data = system_fonts::get(&font);
