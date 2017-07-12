@@ -30,11 +30,9 @@ impl Font {
         Font::from_path(&format!("/ui/fonts/{}/{}/{}.ttf", typeface.unwrap_or("Mono"), family.unwrap_or("Fira"), style.unwrap_or("Regular")))
     }
 
+    // A funciton to automate the process of building a font property  from "typeface, family, style"
     #[cfg(not(target_os = "redox"))]
-    pub fn find(typeface: Option<&str>, family: Option<&str>, style: Option<&str>) -> Result<Font, String> {
-        // This funciton attempts to use the rust-font-loader library, a frontend
-        // to the ubiquitous C library fontconfig, to find and load the specified
-        // font. 
+    fn build_fontproperty (typeface: Option<&str>, family: Option<&str>, style: Option<&str>) -> FontProperty {
         let mut font = FontPropertyBuilder::new();
         if let Some(style) = style {
             let style_caps = &style.to_uppercase();
@@ -71,7 +69,15 @@ impl Font {
                 font = font.family(family);
             }
         }
-        let mut font = font.build();
+        font.build()
+    }
+    
+    #[cfg(not(target_os = "redox"))]
+    pub fn find(typeface: Option<&str>, family: Option<&str>, style: Option<&str>) -> Result<Font, String> {
+        // This funciton attempts to use the rust-font-loader library, a frontend
+        // to the ubiquitous C library fontconfig, to find and load the specified
+        // font. 
+        let mut font = Font::build_fontproperty(typeface, family, style);
         // font_loader::query specific returns an empty vector if there are no matches
         // and does not tag the result with associated data like "italic", merely returns
         // the name of the font if it exists.
@@ -85,9 +91,20 @@ impl Font {
                 None => Err(format!("Could not get font {} from data", &fonts[0]))
             }
         } else { 
-            // If no font matched, try to load the default font manually
-            Font::from_path("/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf")
-        } 
+            // If no font matched, try again with no family, as concatenating "Sans" or "Serif" may rule out legitimate fonts
+            let mut font = Font::build_fontproperty(typeface, family, None);
+            let fonts = system_fonts::query_specific(&mut font);
+            if fonts.len() >= 1 {
+                let font_data = system_fonts::get(&font);
+                match font_data {
+                    Some((data, _)) => Ok(Font::from_data(data.into_boxed_slice())?),
+                    None => Err(format!("Could not get font {} from data", &fonts[0]))
+                }
+            }  else {
+                // If no font matched, try to load the default font manually
+                Font::from_path("/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf")
+            }
+        }
     }
 
     /// Load a font from file path
