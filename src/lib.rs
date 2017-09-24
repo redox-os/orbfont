@@ -4,6 +4,15 @@
 extern crate orbclient;
 extern crate rusttype;
 
+#[cfg(not(target_os = "redox"))]
+pub extern crate font_loader;
+#[cfg(not(target_os = "redox"))]
+pub use font_loader::system_fonts::FontPropertyBuilder;
+#[cfg(not(target_os = "redox"))]
+pub use font_loader::system_fonts;
+#[cfg(not(target_os = "redox"))]
+pub use font_loader::system_fonts::FontProperty;
+
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
@@ -21,9 +30,81 @@ impl Font {
         Font::from_path(&format!("/ui/fonts/{}/{}/{}.ttf", typeface.unwrap_or("Mono"), family.unwrap_or("Fira"), style.unwrap_or("Regular")))
     }
 
+    // A funciton to automate the process of building a font property  from "typeface, family, style"
+    #[cfg(not(target_os = "redox"))]
+    fn build_fontproperty (typeface: Option<&str>, family: Option<&str>, style: Option<&str>) -> FontProperty {
+        let mut font = FontPropertyBuilder::new();
+        if let Some(style) = style {
+            let style_caps = &style.to_uppercase();
+            let italic = style_caps.contains("ITALIC");
+            let oblique = style_caps.contains("OBLIQUE");
+            let bold = style_caps.contains("BOLD");
+            if italic {
+                font = font.italic();
+            }
+            if oblique {
+                font = font.oblique();
+            }
+            if bold {
+                font = font.bold();
+            }
+        }
+        if let Some(typeface) = typeface {
+            // FontProperty has no support for differentiating Sans and Serif.
+            let typeface_caps = &typeface.to_uppercase();
+            if typeface_caps.contains("MONO") {
+                font = font.monospace();
+            }
+        }
+        if let Some(family) = family {
+            if let Some(typeface) = typeface {
+                let typeface_caps = &typeface.to_uppercase();
+                // manually adding Serif and Sans
+                if typeface_caps.contains("SERIF") {
+                    font = font.family(&[family, "Serif"].concat());
+                } else if typeface_caps.contains("SANS") {
+                    font = font.family(&[family, "Sans"].concat())
+                }
+            } else {
+                font = font.family(family);
+            }
+        }
+        font.build()
+    }
+    
     #[cfg(not(target_os = "redox"))]
     pub fn find(typeface: Option<&str>, family: Option<&str>, style: Option<&str>) -> Result<Font, String> {
-        Font::from_path(&format!("/usr/share/fonts/truetype/liberation/{}{}-{}.ttf", family.unwrap_or("Liberation"), typeface.unwrap_or("Mono"), style.unwrap_or("Regular")))
+        // This funciton attempts to use the rust-font-loader library, a frontend
+        // to the ubiquitous C library fontconfig, to find and load the specified
+        // font. 
+        let mut font = Font::build_fontproperty(typeface, family, style);
+        // font_loader::query specific returns an empty vector if there are no matches
+        // and does not tag the result with associated data like "italic", merely returns
+        // the name of the font if it exists.
+        let fonts = system_fonts::query_specific(&mut font); // Returns an empty vector if there are no matches.
+        // Confirm that a font matched:
+        if fonts.len() >= 1 {
+            // get the matched font straight from the data:
+            let font_data = system_fonts::get(&font); // Getting font data from properties
+            match font_data {
+                Some((data, _)) => Ok(Font::from_data(data.into_boxed_slice())?),
+                None => Err(format!("Could not get font {} from data", &fonts[0]))
+            }
+        } else { 
+            // If no font matched, try again with no family, as concatenating "Sans" or "Serif" may rule out legitimate fonts
+            let mut font = Font::build_fontproperty(None, family, style);
+            let fonts = system_fonts::query_specific(&mut font);
+            if fonts.len() >= 1 {
+                let font_data = system_fonts::get(&font);
+                match font_data {
+                    Some((data, _)) => Ok(Font::from_data(data.into_boxed_slice())?),
+                    None => Err(format!("Could not get font {} from data", &fonts[0]))
+                }
+            }  else {
+                // If no font matched, try to load the default font manually
+                Font::from_path("/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf")
+            }
+        }
     }
 
     /// Load a font from file path
