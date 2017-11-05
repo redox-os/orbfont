@@ -71,12 +71,12 @@ impl Font {
         }
         font.build()
     }
-    
+
     #[cfg(not(target_os = "redox"))]
     pub fn find(typeface: Option<&str>, family: Option<&str>, style: Option<&str>) -> Result<Font, String> {
         // This funciton attempts to use the rust-font-loader library, a frontend
         // to the ubiquitous C library fontconfig, to find and load the specified
-        // font. 
+        // font.
         let mut font = Font::build_fontproperty(typeface, family, style);
         // font_loader::query specific returns an empty vector if there are no matches
         // and does not tag the result with associated data like "italic", merely returns
@@ -90,7 +90,7 @@ impl Font {
                 Some((data, _)) => Ok(Font::from_data(data.into_boxed_slice())?),
                 None => Err(format!("Could not get font {} from data", &fonts[0]))
             }
-        } else { 
+        } else {
             // If no font matched, try again with no family, as concatenating "Sans" or "Serif" may rule out legitimate fonts
             let mut font = Font::build_fontproperty(None, family, style);
             let fonts = system_fonts::query_specific(&mut font);
@@ -171,7 +171,7 @@ impl<'a> Text<'a> {
     }
 
     /// Draw the text onto a window
-    pub fn draw<R: Renderer>(&self, renderer: &mut R, x: i32, y: i32, color: Color) {
+    pub fn draw<R: Renderer + ?Sized>(&self, renderer: &mut R, x: i32, y: i32, color: Color) {
         for g in self.glyphs.iter() {
             if let Some(bb) = g.pixel_bounding_box() {
                 g.draw(|off_x, off_y, v| {
