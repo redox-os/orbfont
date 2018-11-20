@@ -8,7 +8,7 @@ before_script:
 
 linux:
   before_script:
-    - apt-get search cmake
+    - apt search cmake
   script:
     - cargo build
     - make tests
