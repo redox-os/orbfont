@@ -9,6 +9,8 @@ before_script:
 linux:
   before_script:
     - apt-get update && apt-get -y install cmake
+    - rustup toolchain add nightly
+    - rustup default nightly
   script:
     - cargo build
     - make tests
