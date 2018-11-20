@@ -117,12 +117,17 @@ impl Font {
 
     /// Load a font from a slice
     pub fn from_data<D: Into<rusttype::SharedBytes<'static>>>(data: D) -> Result<Font, String> {
-        let collection = rusttype::FontCollection::from_bytes(data);
-        let font = try!(collection.into_font().ok_or("font collection did not have exactly one font".to_string()));
-
-        Ok(Font {
-            inner: font
-        })
+        if let Ok(collection) = rusttype::FontCollection::from_bytes(data) {
+            if let Ok(font) = collection.into_font() {
+                return Ok(Font {
+                    inner: font
+                })
+            } else {
+                return Err("error constructing a FontCollection from bytes".to_string());
+            }
+        } else {
+            return Err("font collection did not have exactly one font".to_string())
+        }
     }
 
     /// Render provided text using the font
