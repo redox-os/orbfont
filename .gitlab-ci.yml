@@ -13,7 +13,6 @@ linux:
     - rustup default nightly
   script:
     - cargo build
-    - make tests
   cache:
     paths:
       - cargo/
