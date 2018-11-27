@@ -175,15 +175,16 @@ impl<'a> Text<'a> {
         self.h
     }
 
-    /// Draw the text onto a window
-    pub fn draw<R: Renderer + ?Sized>(&self, renderer: &mut R, x: i32, y: i32, color: Color) {
+    /// Draw the text onto a window and clipp the text to the given bounds
+    pub fn draw_clipped<R: Renderer + ?Sized>(&self, renderer: &mut R, x: i32, y: i32, bounds_x: i32, bounds_width: u32, color: Color) {
         for g in self.glyphs.iter() {
             if let Some(bb) = g.pixel_bounding_box() {
                 g.draw(|off_x, off_y, v| {
                     let off_x = off_x as i32 + bb.min.x;
                     let off_y = off_y as i32 + bb.min.y;
                     // There's still a possibility that the glyph clips the boundaries of the bitmap
-                    if off_x >= 0 && off_x < self.w as i32 && off_y >= 0 && off_y < self.h as i32 {
+                    if off_x >= 0 && off_x < self.w as i32 && off_y >= 0 && off_y < self.h as i32
+                    && x + off_x >= bounds_x && x + off_x <= bounds_x + bounds_width as i32 {
                         let c = (v * 255.0) as u32;
                         renderer.pixel(x + off_x, y + off_y, Color{
                             data: c << 24 | (color.data & 0xFFFFFF)
@@ -193,4 +194,9 @@ impl<'a> Text<'a> {
             }
         }
     }
+
+    /// Draw the text onto a window
+    pub fn draw<R: Renderer + ?Sized>(&self, renderer: &mut R, x: i32, y: i32, color: Color) {
+       self.draw_clipped(renderer, x, y, x, self.w, color)
+    }  
 }
