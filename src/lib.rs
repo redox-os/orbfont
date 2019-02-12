@@ -19,6 +19,7 @@ use std::path::Path;
 
 use orbclient::{Color, Renderer};
 
+#[derive(Clone)]
 pub struct Font {
     inner: rusttype::Font<'static>
 }
