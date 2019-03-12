@@ -1,6 +1,10 @@
 #![crate_name="orbfont"]
 #![crate_type="lib"]
+#![cfg_attr(feature = "no_std", no_std)]
+#![cfg_attr(feature = "no_std", feature(alloc))]
 
+#[cfg(feature = "no_std")]
+extern crate alloc;
 extern crate orbclient;
 extern crate rusttype;
 
@@ -13,8 +17,13 @@ pub use font_loader::system_fonts;
 #[cfg(not(target_os = "redox"))]
 pub use font_loader::system_fonts::FontProperty;
 
+#[cfg(feature = "no_std")]
+use alloc::prelude::*;
+#[cfg(not(feature = "no_std"))]
 use std::fs::File;
+#[cfg(not(feature = "no_std"))]
 use std::io::Read;
+#[cfg(not(feature = "no_std"))]
 use std::path::Path;
 
 use orbclient::{Color, Renderer};
@@ -32,7 +41,7 @@ impl Font {
     }
 
     // A funciton to automate the process of building a font property  from "typeface, family, style"
-    #[cfg(not(target_os = "redox"))]
+    #[cfg(not(any(feature = "no_std", target_os = "redox")))]
     fn build_fontproperty (typeface: Option<&str>, family: Option<&str>, style: Option<&str>) -> FontProperty {
         let mut font = FontPropertyBuilder::new();
         if let Some(style) = style {
@@ -73,7 +82,7 @@ impl Font {
         font.build()
     }
 
-    #[cfg(not(target_os = "redox"))]
+    #[cfg(not(any(feature = "no_std", target_os = "redox")))]
     pub fn find(typeface: Option<&str>, family: Option<&str>, style: Option<&str>) -> Result<Font, String> {
         // This funciton attempts to use the rust-font-loader library, a frontend
         // to the ubiquitous C library fontconfig, to find and load the specified
@@ -109,6 +118,7 @@ impl Font {
     }
 
     /// Load a font from file path
+    #[cfg(not(feature = "no_std"))]
     pub fn from_path<P: AsRef<Path>>(path: P) -> Result<Font, String> {
         let mut file = try!(File::open(path).map_err(|err| format!("failed to open font: {}", err)));
         let mut data = Vec::new();
@@ -199,5 +209,5 @@ impl<'a> Text<'a> {
     /// Draw the text onto a window
     pub fn draw<R: Renderer + ?Sized>(&self, renderer: &mut R, x: i32, y: i32, color: Color) {
        self.draw_clipped(renderer, x, y, x, self.w, color)
-    }  
+    }
 }

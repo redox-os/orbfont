@@ -11,5 +11,9 @@ authors = ["Jeremy Soller <jackpot51@gmail.com>"]
 orbclient = "0.3.18"
 rusttype = "0.7.3"
 
-[target.'cfg(all(not(feature="no_std"), not(target_os = "redox")))'.dependencies]
+[features]
+default = []
+no_std = ["orbclient/no_std"]
+
+[target.'cfg(not(any(feature="no_std", target_os = "redox")))'.dependencies]
 font-loader = "0.7.0"
