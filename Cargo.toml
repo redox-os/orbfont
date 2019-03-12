@@ -8,12 +8,13 @@ readme = "README.md"
 authors = ["Jeremy Soller <jackpot51@gmail.com>"]
 
 [dependencies]
-orbclient = "0.3.18"
-rusttype = "0.7.3"
+num-traits = { version = "0.2.6", default-features = false }
+orbclient = { git = "https://gitlab.redox-os.org/redox-os/orbclient.git", branch = "no_std" }
+rusttype = { git = "https://gitlab.redox-os.org/redox-os/rusttype.git", branch = "no_std", features = ["no_std"] }
 
 [features]
 default = []
-no_std = ["orbclient/no_std"]
+no_std = []
 
-[target.'cfg(not(any(feature="no_std", target_os = "redox")))'.dependencies]
-font-loader = "0.7.0"
+#[target.'cfg(not(target_os = "redox"))'.dependencies]
+#font-loader = "0.7.0"

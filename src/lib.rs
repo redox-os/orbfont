@@ -5,20 +5,22 @@
 
 #[cfg(feature = "no_std")]
 extern crate alloc;
+extern crate num_traits;
 extern crate orbclient;
 extern crate rusttype;
 
-#[cfg(not(target_os = "redox"))]
+#[cfg(not(any(feature = "no_std", target_os = "redox")))]
 pub extern crate font_loader;
-#[cfg(not(target_os = "redox"))]
+#[cfg(not(any(feature = "no_std", target_os = "redox")))]
 pub use font_loader::system_fonts::FontPropertyBuilder;
-#[cfg(not(target_os = "redox"))]
+#[cfg(not(any(feature = "no_std", target_os = "redox")))]
 pub use font_loader::system_fonts;
-#[cfg(not(target_os = "redox"))]
+#[cfg(not(any(feature = "no_std", target_os = "redox")))]
 pub use font_loader::system_fonts::FontProperty;
 
 #[cfg(feature = "no_std")]
 use alloc::prelude::*;
+use num_traits::float::FloatCore;
 #[cfg(not(feature = "no_std"))]
 use std::fs::File;
 #[cfg(not(feature = "no_std"))]
@@ -197,9 +199,7 @@ impl<'a> Text<'a> {
                     if off_x >= 0 && off_x < self.w as i32 && off_y >= 0 && off_y < self.h as i32
                     && x + off_x >= bounds_x && x + off_x <= bounds_x + bounds_width as i32 {
                         let c = (v * 255.0) as u32;
-                        renderer.pixel(x + off_x, y + off_y, Color{
-                            data: c << 24 | (color.data & 0xFFFFFF)
-                        });
+                        renderer.pixel(x + off_x, y + off_y, Color(c << 24 | (color.0 & 0xFFFFFF)));
                     }
                 });
             }
