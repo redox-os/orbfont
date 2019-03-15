@@ -199,7 +199,9 @@ impl<'a> Text<'a> {
                     if off_x >= 0 && off_x < self.w as i32 && off_y >= 0 && off_y < self.h as i32
                     && x + off_x >= bounds_x && x + off_x <= bounds_x + bounds_width as i32 {
                         let c = (v * 255.0) as u32;
-                        renderer.pixel(x + off_x, y + off_y, Color(c << 24 | (color.0 & 0xFFFFFF)));
+                        renderer.pixel(x + off_x, y + off_y, Color{
+                            data: c << 24 | (color.data & 0xFFFFFF)
+                        });
                     }
                 });
             }
