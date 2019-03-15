@@ -9,7 +9,7 @@ authors = ["Jeremy Soller <jackpot51@gmail.com>"]
 
 [dependencies]
 num-traits = { version = "0.2.6", default-features = false }
-orbclient = { git = "https://gitlab.redox-os.org/redox-os/orbclient.git", branch = "no_std" }
+orbclient = { version = "0.3.21", features = ["no_std"] }
 rusttype = { git = "https://gitlab.redox-os.org/redox-os/rusttype.git", branch = "no_std", features = ["no_std"] }
 
 [features]
