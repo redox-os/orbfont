@@ -1,7 +1,7 @@
 #![crate_name="orbfont"]
 #![crate_type="lib"]
 #![cfg_attr(feature = "no_std", no_std)]
-#![cfg_attr(feature = "no_std", feature(alloc))]
+#![cfg_attr(feature = "no_std", feature(alloc_prelude))]
 
 #[cfg(feature = "no_std")]
 extern crate alloc;
@@ -19,7 +19,9 @@ pub use font_loader::system_fonts;
 pub use font_loader::system_fonts::FontProperty;
 
 #[cfg(feature = "no_std")]
-use alloc::prelude::*;
+use alloc::string::{String, ToString};
+#[cfg(feature = "no_std")]
+use alloc::vec::Vec;
 use num_traits::float::FloatCore;
 #[cfg(not(feature = "no_std"))]
 use std::fs::File;
