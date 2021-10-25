@@ -3,17 +3,11 @@
 #![crate_name="orbfont"]
 #![crate_type="lib"]
 
-extern crate orbclient;
-extern crate rusttype;
-
 #[cfg(not(target_os = "redox"))]
-pub extern crate font_loader;
-#[cfg(not(target_os = "redox"))]
-pub use font_loader::system_fonts::FontPropertyBuilder;
-#[cfg(not(target_os = "redox"))]
-pub use font_loader::system_fonts;
-#[cfg(not(target_os = "redox"))]
-pub use font_loader::system_fonts::FontProperty;
+pub use font_loader::{
+    self,
+    system_fonts::{self, FontProperty, FontPropertyBuilder},
+};
 
 use std::fs::File;
 use std::io::Read;
@@ -112,9 +106,9 @@ impl Font {
 
     /// Load a font from file path
     pub fn from_path<P: AsRef<Path>>(path: P) -> Result<Font, String> {
-        let mut file = try!(File::open(path).map_err(|err| format!("failed to open font: {}", err)));
+        let mut file = File::open(path).map_err(|err| format!("failed to open font: {}", err))?;
         let mut data = Vec::new();
-        let _ = try!(file.read_to_end(&mut data).map_err(|err| format!("failed to read font: {}", err)));
+        let _ = file.read_to_end(&mut data).map_err(|err| format!("failed to read font: {}", err))?;
         Font::from_data(data)
     }
 

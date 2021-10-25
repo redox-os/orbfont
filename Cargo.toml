@@ -6,10 +6,11 @@ version = "0.1.9"
 license = "MIT"
 readme = "README.md"
 authors = ["Jeremy Soller <jackpot51@gmail.com>"]
+edition = "2018"
 
 [dependencies]
 orbclient = "0.3.18"
 rusttype = "0.7.3"
 
-[target.'cfg(all(not(feature="no_std"), not(target_os = "redox")))'.dependencies]
+[target.'cfg(not(target_os = "redox"))'.dependencies]
 font-loader = "0.7.0"
