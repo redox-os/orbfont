@@ -60,7 +60,7 @@ impl Font {
                 if typeface_caps.contains("SERIF") {
                     font = font.family(&[family, "Serif"].concat());
                 } else if typeface_caps.contains("SANS") {
-                    font = font.family(&[family, "Sans"].concat())
+                    font = font.family(&[family, "Sans"].concat());
                 }
             } else {
                 font = font.family(family);
@@ -80,7 +80,7 @@ impl Font {
         // the name of the font if it exists.
         let fonts = system_fonts::query_specific(&mut font); // Returns an empty vector if there are no matches.
         // Confirm that a font matched:
-        if fonts.len() >= 1 {
+        if !fonts.is_empty() {
             // get the matched font straight from the data:
             let font_data = system_fonts::get(&font); // Getting font data from properties
             match font_data {
@@ -91,7 +91,7 @@ impl Font {
             // If no font matched, try again with no family, as concatenating "Sans" or "Serif" may rule out legitimate fonts
             let mut font = Font::build_fontproperty(None, family, style);
             let fonts = system_fonts::query_specific(&mut font);
-            if fonts.len() >= 1 {
+            if !fonts.is_empty() {
                 let font_data = system_fonts::get(&font);
                 match font_data {
                     Some((data, _)) => Ok(Font::from_data(data.into_boxed_slice())?),
@@ -116,14 +116,14 @@ impl Font {
     pub fn from_data<D: Into<rusttype::SharedBytes<'static>>>(data: D) -> Result<Font, String> {
         if let Ok(collection) = rusttype::FontCollection::from_bytes(data) {
             if let Ok(font) = collection.into_font() {
-                return Ok(Font {
+                Ok(Font {
                     inner: font
                 })
             } else {
-                return Err("error constructing a FontCollection from bytes".to_string());
+                Err("error constructing a FontCollection from bytes".to_string())
             }
         } else {
-            return Err("font collection did not have exactly one font".to_string())
+            Err("font collection did not have exactly one font".to_string())
         }
     }
 
@@ -143,14 +143,14 @@ impl Font {
 
         // Find the most visually pleasing width to display
         let width = glyphs.iter().rev()
-            .filter_map(|g| g.pixel_bounding_box()
+            .find_map(|g| g.pixel_bounding_box()
                         .map(|b| b.min.x as f32 + g.unpositioned().h_metrics().advance_width))
-            .next().unwrap_or(0.0);
+            .unwrap_or(0.0);
 
         Text {
             w: width.ceil() as u32,
             h: height.ceil() as u32,
-            glyphs: glyphs
+            glyphs
         }
     }
 }
@@ -174,7 +174,7 @@ impl<'a> Text<'a> {
 
     /// Draw the text onto a window and clipp the text to the given bounds
     pub fn draw_clipped<R: Renderer + ?Sized>(&self, renderer: &mut R, x: i32, y: i32, bounds_x: i32, bounds_width: u32, color: Color) {
-        for g in self.glyphs.iter() {
+        for g in &self.glyphs {
             if let Some(bb) = g.pixel_bounding_box() {
                 g.draw(|off_x, off_y, v| {
                     let off_x = off_x as i32 + bb.min.x;
@@ -184,7 +184,7 @@ impl<'a> Text<'a> {
                     && x + off_x >= bounds_x && x + off_x <= bounds_x + bounds_width as i32 {
                         let c = (v * 255.0) as u32;
                         renderer.pixel(x + off_x, y + off_y, Color{
-                            data: c << 24 | (color.data & 0xFFFFFF)
+                            data: c << 24 | (color.data & 0x00FF_FFFF)
                         });
                     }
                 });
@@ -194,6 +194,6 @@ impl<'a> Text<'a> {
 
     /// Draw the text onto a window
     pub fn draw<R: Renderer + ?Sized>(&self, renderer: &mut R, x: i32, y: i32, color: Color) {
-       self.draw_clipped(renderer, x, y, x, self.w, color)
-    }  
+       self.draw_clipped(renderer, x, y, x, self.w, color);
+    }
 }
