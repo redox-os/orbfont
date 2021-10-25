@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 #![crate_name="orbfont"]
 #![crate_type="lib"]
 
