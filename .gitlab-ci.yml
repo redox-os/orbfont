@@ -1,46 +1,20 @@
-image: 'rust:latest'
 
-variables:
-    CARGO_HOME: $CI_PROJECT_DIR/cargo
-before_script:
-  - apt-get update -qq
-  - apt-get install -qq build-essential curl git
-
-linux:
+build:linux:
+  image: "rust:latest"
   before_script:
-    - apt-get update && apt-get -y install cmake
+  - apt-get update && apt-get -y install cmake
+  - rustup toolchain add stable
   script:
-    - rustup default nightly
-    - cargo build
-  cache:
-    paths:
-      - cargo/
-      - target/
+  - cargo +stable build
 
-redox:
-  variables:
-    CC: "x86_64-unknown-redox-gcc"
-  before_script:
-    - apt-get update -qq
-    - apt-get install -qq build-essential curl git gnupg software-properties-common apt-transport-https
-    - apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AA12E97F0881517F
-    - add-apt-repository 'deb https://static.redox-os.org/toolchain/apt /'
-    - apt-get update -qq && apt-get install -qq x86-64-unknown-redox-gcc
-    - rustup default nightly-2021-06-15
-    - rustup target add x86_64-unknown-redox
+build:redox:
+  image: "redoxos/redoxer"
   script:
-    - cargo build --target x86_64-unknown-redox
-  cache:
-    paths:
-      - cargo/
-      - target/
+  - redoxer build
 
-no_std:
+build:no_std:
+  image: "rust:latest"
   before_script:
   - rustup toolchain add stable --target thumbv6m-none-eabi
   script:
   - cargo +stable build --no-default-features --features=no-std --target thumbv6m-none-eabi
-  cache:
-    paths:
-      - cargo/
-      - target/
