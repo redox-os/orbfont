@@ -34,3 +34,13 @@ redox:
     paths:
       - cargo/
       - target/
+
+no_std:
+  before_script:
+  - rustup toolchain add stable --target thumbv6m-none-eabi
+  script:
+  - cargo +stable build --no-default-features --features=no-std --target thumbv6m-none-eabi
+  cache:
+    paths:
+      - cargo/
+      - target/

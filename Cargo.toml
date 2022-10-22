@@ -9,8 +9,14 @@ authors = ["Jeremy Soller <jackpot51@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-orbclient = "0.3"
-rusttype = "0.8"
+orbclient = { version = "0.3", default-features = false }
+rusttype = { git = "https://gitlab.redox-os.org/redox-os/rusttype", default-features = false }
+num-traits = { version = "0.2", default-features = false, optional = true }
 
 [target.'cfg(not(target_os = "redox"))'.dependencies]
-font-loader = "0.7.0"
+font-loader = { version = "0.11.0", optional = true }
+
+[features]
+default = ["std"]
+std = ["rusttype/std", "font-loader", "orbclient/bundled"]
+no-std = ["rusttype/libm-math", "num-traits"]

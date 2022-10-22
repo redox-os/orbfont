@@ -1,17 +1,23 @@
 // SPDX-License-Identifier: MIT
 
-#![crate_name="orbfont"]
-#![crate_type="lib"]
+#![cfg_attr(not(feature = "std"), no_std)]
 
-#[cfg(not(target_os = "redox"))]
+#[cfg(not(feature = "std"))]
+extern crate alloc;
+
+#[cfg(not(feature = "std"))]
+use num_traits::float::FloatCore;
+
+#[cfg(all(feature = "std", not(target_os = "redox")))]
 pub use font_loader::{
     self,
     system_fonts::{self, FontProperty, FontPropertyBuilder},
 };
 
-use std::fs::File;
-use std::io::Read;
-use std::path::Path;
+#[cfg(not(feature = "std"))]
+use alloc::string::{String, ToString};
+#[cfg(not(feature = "std"))]
+use alloc::vec::Vec;
 
 use orbclient::{Color, Renderer};
 
@@ -28,7 +34,7 @@ impl Font {
     }
 
     // A funciton to automate the process of building a font property  from "typeface, family, style"
-    #[cfg(not(target_os = "redox"))]
+    #[cfg(all(feature = "std", not(target_os = "redox")))]
     fn build_fontproperty (typeface: Option<&str>, family: Option<&str>, style: Option<&str>) -> FontProperty {
         let mut font = FontPropertyBuilder::new();
         if let Some(style) = style {
@@ -69,7 +75,7 @@ impl Font {
         font.build()
     }
 
-    #[cfg(not(target_os = "redox"))]
+    #[cfg(all(feature = "std", not(target_os = "redox")))]
     pub fn find(typeface: Option<&str>, family: Option<&str>, style: Option<&str>) -> Result<Font, String> {
         // This funciton attempts to use the rust-font-loader library, a frontend
         // to the ubiquitous C library fontconfig, to find and load the specified
@@ -84,7 +90,13 @@ impl Font {
             // get the matched font straight from the data:
             let font_data = system_fonts::get(&font); // Getting font data from properties
             match font_data {
-                Some((data, _)) => Ok(Font::from_data(data.into_boxed_slice())?),
+                Some((data, _)) => {
+                    if let Some(font) = rusttype::Font::try_from_vec(data) {
+                        Ok(Font { inner: font })
+                    } else {
+                        Err("error constructing a Font from bytes".to_string())
+                    }
+                }
                 None => Err(format!("Could not get font {} from data", &fonts[0]))
             }
         } else {
@@ -94,7 +106,13 @@ impl Font {
             if !fonts.is_empty() {
                 let font_data = system_fonts::get(&font);
                 match font_data {
-                    Some((data, _)) => Ok(Font::from_data(data.into_boxed_slice())?),
+                    Some((data, _)) => {
+                        if let Some(font) = rusttype::Font::try_from_vec(data) {
+                            Ok(Font { inner: font })
+                        } else {
+                            Err("error constructing a Font from bytes".to_string())
+                        }
+                    }
                     None => Err(format!("Could not get font {} from data", &fonts[0]))
                 }
             }  else {
@@ -105,25 +123,24 @@ impl Font {
     }
 
     /// Load a font from file path
-    pub fn from_path<P: AsRef<Path>>(path: P) -> Result<Font, String> {
-        let mut file = File::open(path).map_err(|err| format!("failed to open font: {}", err))?;
-        let mut data = Vec::new();
-        let _ = file.read_to_end(&mut data).map_err(|err| format!("failed to read font: {}", err))?;
-        Font::from_data(data)
+    #[cfg(feature = "std")]
+    pub fn from_path<P: AsRef<std::path::Path>>(path: P) -> Result<Font, String> {
+        let file = std::fs::read_to_string(path).map_err(|err| format!("failed to read font: {}", err))?;
+        let data = file.into_bytes();
+
+        if let Some(font) = rusttype::Font::try_from_vec(data) {
+            Ok(Font { inner: font })
+        } else {
+            Err("error constructing a Font from bytes".to_string())
+        }
     }
 
     /// Load a font from a slice
-    pub fn from_data<D: Into<rusttype::SharedBytes<'static>>>(data: D) -> Result<Font, String> {
-        if let Ok(collection) = rusttype::FontCollection::from_bytes(data) {
-            if let Ok(font) = collection.into_font() {
-                Ok(Font {
-                    inner: font
-                })
-            } else {
-                Err("error constructing a FontCollection from bytes".to_string())
-            }
+    pub fn from_data(data: &'static [u8]) -> Result<Font, String> {
+        if let Some(font) = rusttype::Font::try_from_bytes(data) {
+            Ok(Font { inner: font })
         } else {
-            Err("font collection did not have exactly one font".to_string())
+            Err("error constructing a Font from bytes".to_string())
         }
     }
 
