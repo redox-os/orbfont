@@ -9,7 +9,7 @@ use std::cmp::max;
 
 use std::env;
 
-use orbclient::{Color, Window, WindowFlag, EventOption};
+use orbclient::{Color, Renderer, Window, WindowFlag, EventOption};
 use orbfont::Font;
 
 fn main() {
