@@ -10,7 +10,7 @@ edition = "2018"
 
 [dependencies]
 orbclient = { version = "0.3", default-features = false }
-rusttype = { git = "https://gitlab.redox-os.org/redox-os/rusttype", default-features = false }
+rusttype = { version = "0.9.3", default-features = false }
 num-traits = { version = "0.2", default-features = false, optional = true }
 
 [target.'cfg(not(target_os = "redox"))'.dependencies]
