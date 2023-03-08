@@ -125,9 +125,7 @@ impl Font {
     /// Load a font from file path
     #[cfg(feature = "std")]
     pub fn from_path<P: AsRef<std::path::Path>>(path: P) -> Result<Font, String> {
-        let file = std::fs::read_to_string(path).map_err(|err| format!("failed to read font: {}", err))?;
-        let data = file.into_bytes();
-
+        let data = std::fs::read(path).map_err(|err| format!("failed to read font: {}", err))?;
         if let Some(font) = rusttype::Font::try_from_vec(data) {
             Ok(Font { inner: font })
         } else {
